@@ -21,6 +21,8 @@ main = do
         // https://msdn.microsoft.com/en-us/library/windows/desktop/ms684166(v=vs.85).aspx
         // Virtual-Key Codes
         // https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
+        // This code is based on a c++ help forum answer:
+        // http://www.cplusplus.com/forum/beginner/3329/
         DWORD        mode;
         HANDLE       hstdin;
         INPUT_RECORD inrec;
