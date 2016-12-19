@@ -2,7 +2,7 @@
 
 module Control.Console.Win32 (
     consoleInit,
-    consoleGetLine
+    readOneChar
     ) where
 
 -- base
@@ -20,9 +20,6 @@ C.include "windows.h"
 consoleInit = do
     hSetBuffering stdout NoBuffering
     setImmediateMode
-
--- | Gets one line from the user.
-consoleGetLine = lineGrab ""
 
 {-| Sets the console mode to give immediate input instead of line input,
 which implicitly also disables echoing. Returns if it was successful or not.
@@ -68,19 +65,3 @@ readOneChar = (toEnum . fromEnum) <$> [C.block| char {
     }
     return result;
     } |]
-
-{-| Returns a line from the user. The input string is the stack of character
-input so far, which gets reversed and returned once the line is completed.
--}
-lineGrab :: String -> IO String
-lineGrab lookback = do
-    c <- readOneChar
-    case c of
-        '\r' -> putStr "\r\n" >> return (reverse lookback) -- windows uses \r at the end of lines.
-        '\n' -> putStr "\n" >> return (reverse lookback) -- you'll probably never get this?
-        '\EOT' -> putStr "\n" >> return (reverse lookback) -- we will treat C-d as if it was enter.
-        '\b' -> if null lookback -- don't backspace earlier than the "start" of the input point.
-            then lineGrab []
-            else putStr "\b \b" >> lineGrab (drop 1 lookback)
-        '\t' -> putStr "    "  >> lineGrab ("    "++lookback)
-        _ -> putChar c >> lineGrab (c:lookback)

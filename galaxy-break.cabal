@@ -18,7 +18,7 @@ library
                         inline-c
     if os(windows)
         other-modules:  Control.Console.Win32
-        cpp-options:    -DWin32
+        cpp-options:    -DWin32flag
         c-sources:      lib/Control/Console/Win32.c
 
 executable galaxy
