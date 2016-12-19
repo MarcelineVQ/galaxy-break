@@ -1,3 +1,9 @@
+Galaxy Break (C) 2016 Daniel Gee.
+
+This program and its source code are available to you under the terms of
+the GNU AGPL, reproduced below.
+
+===========================================================================
                     GNU AFFERO GENERAL PUBLIC LICENSE
                        Version 3, 19 November 2007
 
