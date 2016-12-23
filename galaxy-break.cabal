@@ -1,6 +1,6 @@
 
 name:               galaxy-break
-version:            0.0.1
+version:            0.0.2
 synopsis:           A game of adventure in a fanciful galaxy.
 author:             Lokathor
 license:            AGPL
@@ -27,4 +27,6 @@ executable galaxy
     hs-source-dirs:     src
     main-is:            Main.hs
     build-depends:      base,
-                        galaxy-break
+                        galaxy-break,
+                        async
+    ghc-options:        -threaded
