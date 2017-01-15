@@ -1,6 +1,6 @@
 
 name:               galaxy-break
-version:            0.0.2
+version:            0.0.3
 synopsis:           A game of adventure in a fanciful galaxy.
 author:             Lokathor
 license:            AGPL
@@ -13,13 +13,22 @@ library
     other-extensions:   QuasiQuotes,
                         TemplateHaskell
     hs-source-dirs:     lib
-    exposed-modules:    Control.Console
+    exposed-modules:    ConcurrentConsole,
+                        PCGen
     build-depends:      base,
-                        inline-c
+                        ghc-prim,
+                        inline-c,
+                        random,
+                        MonadRandom,
+                        vector,
+                        containers,
+                        deepseq
     if os(windows)
-        other-modules:  Control.Console.Win32
+        other-modules:  ConcurrentConsole.Win32
         cpp-options:    -DWin32flag
-        c-sources:      lib/Control/Console/Win32.c
+        c-sources:      lib/ConcurrentConsole/Win32.c
+    if arch(x86_64)
+        cpp-options:    -DSixtyFourBit
 
 executable galaxy
     default-language:   Haskell2010
@@ -28,5 +37,24 @@ executable galaxy
     main-is:            Main.hs
     build-depends:      base,
                         galaxy-break,
-                        async
+                        async,
+                        random,
+                        MonadRandom
     ghc-options:        -threaded
+
+test-suite alltests
+    default-language:   Haskell2010
+    type:               exitcode-stdio-1.0
+    hs-source-dirs:     test
+    main-is:            Tests.hs
+    other-modules:      PCGenTests
+    build-depends:      hspec,
+                        QuickCheck,
+                        galaxy-break,
+                        base,
+                        random,
+                        MonadRandom,
+                        containers,
+                        mtl
+    if arch(x86_64)
+        cpp-options: -DSixtyFourBit

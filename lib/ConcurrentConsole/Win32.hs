@@ -1,6 +1,6 @@
 {-# LANGUAGE QuasiQuotes, TemplateHaskell, Trustworthy #-}
 
-module Control.Console.Win32 (
+module ConcurrentConsole.Win32 (
     consoleInit,
     readOneChar
     ) where

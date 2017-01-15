@@ -1,6 +1,6 @@
 {-# LANGUAGE CPP, Trustworthy #-}
 
-module Control.Console (
+module ConcurrentConsole (
     consoleInit,
     consoleGetLine,
     atomicGetOneChar,
@@ -12,7 +12,7 @@ Here begins the system-dependent imports for the primitive operations that the
 other operations within this module will depend upon.
 -} -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 #ifdef Win32flag
-import Control.Console.Win32 (consoleInit, readOneChar)
+import ConcurrentConsole.Win32 (consoleInit, readOneChar)
 #else
 support for other systems should go here, hashtag-yolo
 #endif
@@ -24,6 +24,9 @@ of the module, which depends on those two functions, will not compile at all.
 -- base
 import Control.Concurrent.MVar
 import Control.Monad (unless)
+import Control.Exception (evaluate)
+-- deepseq
+import Control.DeepSeq
 
 {-| Gets one line from the user. There is minimal special support. Use of tab
 inserts 4 spaces. Use of C-d will count as the enter key (hopefully).
@@ -72,15 +75,19 @@ atomicGetOneChar lock = do
             _ -> putChar c >> return (c:buffer,Nothing)
 
 {-| performs a putStrLn action while holding the lock given and with special
-processing to attempt to keep the buffered text working properly.
+processing to attempt to keep the buffered text working properly. The message
+given is fully forced before the lock is acquired, so any work to be done in
+the process will allow other threads to keep printing in the mean time.
 -}
 atomicPrintLn :: MVar [Char] -> String -> IO ()
-atomicPrintLn lock message = withMVar lock $ \buffer -> do
-    -- clear the currently displayed buffer text
-    putStr (take (length buffer) $ repeat '\b')
-    putStr (take (length buffer) $ repeat ' ')
-    putStr (take (length buffer) $ repeat '\b')
-    -- print the message
-    putStrLn message
-    -- restore the displayed buffer
-    putStr (reverse buffer)
+atomicPrintLn lock message = do
+    evaluatedMessage <- evaluate $ force $ message 
+    withMVar lock $ \buffer -> do
+        -- clear the currently displayed buffer text
+        putStr (take (length buffer) $ repeat '\b')
+        putStr (take (length buffer) $ repeat ' ')
+        putStr (take (length buffer) $ repeat '\b')
+        -- print the message
+        putStrLn evaluatedMessage
+        -- restore the displayed buffer
+        putStr (reverse buffer)
