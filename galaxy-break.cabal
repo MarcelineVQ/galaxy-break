@@ -32,6 +32,10 @@ library
         other-modules:  ConcurrentConsole.Win32
         cpp-options:    -DWin32flag
         c-sources:      lib/ConcurrentConsole/Win32.c
+    if os(linux)
+     -- Possibly works on mac as well
+        other-modules:  ConcurrentConsole.Linux
+        cpp-options:    -DLinuxflag
     if arch(x86_64)
         cpp-options:    -DSixtyFourBit
 

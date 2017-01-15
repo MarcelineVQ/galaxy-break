@@ -11,10 +11,13 @@ module ConcurrentConsole (
 Here begins the system-dependent imports for the primitive operations that the
 other operations within this module will depend upon.
 -} -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-#ifdef Win32flag
+#if defined Win32flag
 import ConcurrentConsole.Win32 (consoleInit, readOneChar)
+#elif defined Linuxflag
+import ConcurrentConsole.Linux (consoleInit, readOneChar)
 #else
-support for other systems should go here, hashtag-yolo
+-- support for other systems should go here, hashtag-yolo
+import NotRealModule -- currently, it's an error to reach this
 #endif
 {- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 consoleInit and readOneChar must have been somehow imported by now or the rest
