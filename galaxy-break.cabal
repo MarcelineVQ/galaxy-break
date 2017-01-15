@@ -13,12 +13,16 @@ library
     other-extensions:   Trustworthy,
                         QuasiQuotes,
                         TemplateHaskell,
-                        GeneralizedNewtypeDeriving
+                        GeneralizedNewtypeDeriving,
+                        NondecreasingIndentation,
+                        CPP,
+                        MultiParamTypeClasses,
+                        TypeFamilies,
+                        UndecidableInstances
     hs-source-dirs:     lib
     exposed-modules:    ConcurrentConsole,
                         PCGen
     build-depends:      base,
-                        ghc-prim,
                         inline-c,
                         random,
                         MonadRandom,
@@ -33,7 +37,7 @@ library
         cpp-options:    -DWin32flag
         c-sources:      lib/ConcurrentConsole/Win32.c
     if os(linux)
-     -- Possibly works on mac as well
+    -- Possibly works on mac as well
         other-modules:  ConcurrentConsole.Linux
         cpp-options:    -DLinuxflag
     if arch(x86_64)

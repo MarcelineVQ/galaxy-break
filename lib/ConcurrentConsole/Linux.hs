@@ -1,3 +1,5 @@
+{-# LANGUAGE Trustworthy #-}
+
 module ConcurrentConsole.Linux (
     consoleInit,
     readOneChar
@@ -9,7 +11,7 @@ import System.IO
 -- | Make the console ready for use in a platform dependent manner.
 consoleInit :: IO Bool
 consoleInit = do
-    hSetBuffering stdout NoBuffering
+    hSetBuffering stdout (BlockBuffering Nothing)
     hSetEcho stdin False
     return True
 

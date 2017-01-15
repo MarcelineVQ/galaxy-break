@@ -1,4 +1,5 @@
-{-# LANGUAGE CPP, Trustworthy, GeneralizedNewtypeDeriving, MultiParamTypeClasses, TypeFamilies, UndecidableInstances #-}
+{-# LANGUAGE CPP, Trustworthy, GeneralizedNewtypeDeriving,
+MultiParamTypeClasses, TypeFamilies, UndecidableInstances #-}
 
 module ConcurrentConsole (
     ConConsole(),
@@ -17,7 +18,7 @@ import ConcurrentConsole.Win32 (consoleInit, readOneChar)
 import ConcurrentConsole.Linux (consoleInit, readOneChar)
 #else
 -- support for other systems should go here, hashtag-yolo
-import NotRealModule -- currently, it's an error to reach this
+import NotImplementedModule -- currently, it's an error to reach this
 #endif
 {- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 consoleInit and readOneChar must have been somehow imported by now or the rest

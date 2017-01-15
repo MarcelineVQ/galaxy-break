@@ -11,15 +11,15 @@ module PCGen (
     mkPCGen
     ) where
 
-import System.Random
+-- base
 import Data.Bits
 import Data.Word
 import Data.Int
 import Data.List
 import Data.Char
-
 import GHC.Exts
-import GHC.Prim
+-- random
+import System.Random
 
 #ifdef SixtyFourBit
 {-

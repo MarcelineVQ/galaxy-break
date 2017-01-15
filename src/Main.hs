@@ -32,6 +32,7 @@ randSum count = do
     conPutStrLn $ "randSum> Total: " ++ show (sum results)
     conPutStrLn $ "randSum> Final Generator: " ++ show resultGen
 
+againAction :: String -> ConConsole Bool
 againAction string = do
     if null string
         then do
