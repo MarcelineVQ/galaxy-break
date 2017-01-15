@@ -191,7 +191,10 @@ stepPCGen (PCGen32 state inc) = (w, newGen)
           newState = state * 6364136223846793005 + inc
           newGen = PCGen32 newState inc
 
-{-| Mostly what you'd expect.
+{-| Mostly what you'd expect. Note that the 32 bits of output are forced into
+being returned as an Int32 by the interface, so the `genRange` goes both above
+and below zero. (In the 64-bit version it uses the range of a Word32 directly,
+since that fits entirely within an Int64.)
 -}
 instance RandomGen PCGen where
     next gen = (outInt, nextGen)
