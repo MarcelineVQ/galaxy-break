@@ -19,7 +19,7 @@ C.include "windows.h"
 -- | Make the console ready for use in a platform dependent manner.
 consoleInit :: IO Bool
 consoleInit = do
-    hSetBuffering stdout NoBuffering
+    hSetBuffering stdout (BlockBuffering Nothing)
     setImmediateMode
 
 {-| Sets the console mode to give immediate input instead of line input, which

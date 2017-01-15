@@ -10,8 +10,10 @@ cabal-version:      >=1.10
 
 library
     default-language:   Haskell2010
-    other-extensions:   QuasiQuotes,
-                        TemplateHaskell
+    other-extensions:   Trustworthy,
+                        QuasiQuotes,
+                        TemplateHaskell,
+                        GeneralizedNewtypeDeriving
     hs-source-dirs:     lib
     exposed-modules:    ConcurrentConsole,
                         PCGen
@@ -22,7 +24,10 @@ library
                         MonadRandom,
                         vector,
                         containers,
-                        deepseq
+                        deepseq,
+                        mtl,
+                        monad-control,
+                        transformers-base
     if os(windows)
         other-modules:  ConcurrentConsole.Win32
         cpp-options:    -DWin32flag
@@ -37,10 +42,10 @@ executable galaxy
     main-is:            Main.hs
     build-depends:      base,
                         galaxy-break,
-                        async,
+                        lifted-async,
                         random,
                         MonadRandom
-    ghc-options:        -threaded
+    ghc-options:        -threaded -O2
 
 test-suite alltests
     default-language:   Haskell2010
