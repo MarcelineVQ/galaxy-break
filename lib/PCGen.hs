@@ -198,7 +198,7 @@ since that fits entirely within an Int64.)
 -}
 instance RandomGen PCGen where
     next gen = (outInt, nextGen)
-        where (outWord32, nextGen) = stepPCGen gen
+        where (outWord, nextGen) = stepPCGen gen
               outInt = fromIntegral (fromIntegral outWord :: Int32)
     genRange _ = (fromIntegral (minBound :: Int32),fromIntegral (maxBound :: Int32))
     split gen@(PCGen state inc) = (outA, outB)
