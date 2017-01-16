@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, Trustworthy, GeneralizedNewtypeDeriving,
+{-# LANGUAGE Trustworthy, CPP, Trustworthy, GeneralizedNewtypeDeriving,
 MultiParamTypeClasses, TypeFamilies, UndecidableInstances #-}
 
 module ConcurrentConsole (
@@ -18,7 +18,7 @@ import ConcurrentConsole.Win32 (consoleInit, readOneChar)
 import ConcurrentConsole.Linux (consoleInit, readOneChar)
 #else
 -- support for other systems should go here, hashtag-yolo
-import NotImplementedModule -- currently, it's an error to reach this
+import YourSystemDoesntHaveConConsoleSupport
 #endif
 {- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 consoleInit and readOneChar must have been somehow imported by now or the rest
@@ -41,25 +41,40 @@ import Control.Monad.Base
 -- monad-control
 import Control.Monad.Trans.Control
 
-{-| The ConConsole lets you use the console concurrently in a proper way.
+{-| The ConConsole wraps immediately over IO and lets you use the console
+concurrently. That is, if the user has a partly entered command, the print
+operations will delete the buffered input, print their output, and then
+restore the buffered input as it was. This allows background threads to safely
+print things out without the user's input getting all spread out. There's
+still only source of input of course, because the user has only one input
+buffer. When you're using this you'll probably want to use something like the
+`lifted-async` package rather than using forkIO or trying to lift the `async`
+package yourself.
 -}
 newtype ConConsole a = ConConsole (ReaderT (MVar [Char]) IO a)
     deriving (Functor, Applicative, Monad, MonadIO, MonadBase IO)
 
-{-| This is magic that I don't fully understand, all the thanks go to
-cocreature of #haskell.
+{-| This is magic that I don't fully understand, all the thanks go to cocreature
+of #haskell. This lets you use ConConsole with the `lifted-async` functions.
 -}
 instance MonadBaseControl IO ConConsole where
-  type StM ConConsole a = StM (ReaderT (MVar [Char]) IO) a
-  liftBaseWith f = ConConsole (liftBaseWith (\f' -> f (\(ConConsole r) -> f' r)))
-  restoreM st = ConConsole (restoreM st)
+    type StM ConConsole a = StM (ReaderT (MVar [Char]) IO) a
+    liftBaseWith f = ConConsole (liftBaseWith (\f' -> f (\(ConConsole r) -> f' r)))
+    restoreM st = ConConsole (restoreM st)
 
+{-| Performs the ConConsole action within IO.
+-}
 runConConsole :: ConConsole a -> IO a
 runConConsole (ConConsole r) = do
     consoleInit
     lock <- newMVar []
     runReaderT r lock
 
+{-| Prints the string given, respecting the current input. Before the printing
+process begins, the string is fully evaluated, which ensures that any work
+required to evaluate the string is already done by the time that the lock on
+the console is taken, allowing others to print during that time.
+-}
 conPutStrLn :: String -> ConConsole ()
 conPutStrLn message = ConConsole $ do
     lock <- ask
@@ -74,6 +89,23 @@ conPutStrLn message = ConConsole $ do
         putStr (reverse buffer)
         hFlush stdout
 
+{-| It is intended that the action for the main thread "ends" with this action
+after any necessary setup. This is a specialized sort of loop: it reads one
+character at a time (blocking if necessary), then grabs the conconsole lock,
+echoes the input to the screen as necessary, and adds the input to the
+buffer. If the character is one of a few special characters, a bit of
+additional processing is performed (proper support for backspace, tab key
+inserts 4 spaces, \r, \n, and Ctrl+D end the line). If there's an end of line
+then the buffer is passed along to the callback given, which should determine
+if the loop should run agian. For the UI to remain responsive, the callback
+should return as fast as possible and divert any actual work into side
+threads. Particularly, the system will keep building up key input events in
+the queue even if this action is blocked in the callback or by a GC pause or
+something else, but the user just won't see the keys appearing on screen.
+
+In the future, it is intended that the key processing will be incorporated
+into how the callback works so that the loop is more customizable.
+-}
 conConsoleMain :: (String -> ConConsole Bool) -> ConConsole ()
 conConsoleMain action = do
     c <- liftIO readOneChar
@@ -97,7 +129,8 @@ conConsoleMain action = do
                 putStr "\n"
                 hFlush stdout
                 return ([], Just $ reverse buffer)
-            '\b' -> if null buffer -- don't backspace earlier than the "start" of the input point.
+            '\b' -> if null buffer
+                -- don't backspace earlier than the "start" of the input point.
                 then return ([], Nothing)
                 else do
                     putStr "\b \b"

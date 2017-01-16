@@ -68,7 +68,8 @@ instance RandomGen PCGen where
     next !(PCGen st inc) = (outInt,outGen) where
         xorShifted = uncheckedShiftRL# (xor# (uncheckedShiftRL# st 18#) st) 27#
         rot = uncheckedShiftRL# st 59#
-        w = or# (uncheckedShiftRL# xorShifted (word2Int# rot)) (uncheckedShiftL# xorShifted (word2Int# (and# (minusWord# 0## rot) 31##)))
+        w = or# (uncheckedShiftRL# xorShifted (word2Int# rot))
+            (uncheckedShiftL# xorShifted (word2Int# (and# (minusWord# 0## rot) 31##)))
         newState = plusWord# (timesWord# st 6364136223846793005##) inc
         outGen = PCGen newState inc
         outInt = I# (word2Int# (narrow32Word# w))
@@ -101,9 +102,8 @@ instance Random PCGen where
 instance Eq PCGen where
     (==) !(PCGen stA incA) !(PCGen stB incB) = isTrue# (andI# (eqWord# stA stB) (eqWord# incA incB))
 
-{-| PCGen are ordered by inc, then by state. The order isn't intended to
-be used for anything other than to potentially put PCGen values into a
-'Set'.
+{-| PCGen are ordered by inc, then by state. The order isn't intended to be used
+for anything other than to potentially put PCGen values into a 'Set'.
 -}
 instance Ord PCGen where
     compare !(PCGen stA incA) !(PCGen stB incB) = case compare (W# incA) (W# incB) of
@@ -119,9 +119,9 @@ showReadPrefix = "PCGen"
 instance Show PCGen where
     show !(PCGen st inc) = showReadPrefix ++ " " ++ show (W# st) ++ " " ++ show (W# inc)
 
-{-| The show and read for PCGen will remake the exact same PCGen. This
-instance ensures that the inc value is always odd, but that won't affect you
-if you only get PCGen strings from uses of the show function.
+{-| The show and read for PCGen will remake the exact same PCGen. This instance
+ensures that the inc value is always odd, but that won't affect you if you
+only get PCGen strings from uses of the show function.
 -}
 instance Read PCGen where
     -- readsPrec :: Int -> String -> [(a, String)]
@@ -165,8 +165,8 @@ wrapped up. Things are still pretty fast, just not as fast.
 {-| A Permuted Congruential Generator that produces 32-bits of output per
 step. Equal when both internal values are equal. Ordered in some arbitrary way
 that doesn't matter, it's just so you can put it into a set. Read and Show are
-both derived, allowing you to serialize your PCGen, but this derived Read won't
-ensure that the inc value is odd if you give it a string that you made
+both derived, allowing you to serialize your PCGen, but this derived Read
+won't ensure that the inc value is odd if you give it a string that you made
 yourself instead of a string that came from show.
 -}
 data PCGen = PCGen {
