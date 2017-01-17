@@ -1,4 +1,4 @@
-{-# LANGUAGE NondecreasingIndentation #-}
+{-# LANGUAGE TypeApplications, NondecreasingIndentation #-}
 
 module Main where
 
@@ -28,7 +28,7 @@ randSum :: Int -> ConConsole ()
 randSum count = do
     conPutStrLn $ "randSum> Beginning a sum of "++(show count)++" randoms..."
     startGen <- liftIO $ randomIO :: ConConsole PCGen
-    let (results, resultGen) = runRand (replicateM count (getRandom :: MonadRandom m => m Word)) startGen
+    let (results, resultGen) = runRand @PCGen @[Word] (take count <$> getRandoms) startGen
     conPutStrLn $ "randSum> Total: " ++ show (sum results)
     conPutStrLn $ "randSum> Final Generator: " ++ show resultGen
 
